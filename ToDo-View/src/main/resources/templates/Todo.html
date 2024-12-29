@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<!--
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/Other/html.html to edit this template
+-->
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layaout"
+      layout:decorate="~{layout}">
+    <head>
+        <title>TODO supply a title</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body layout:fragment="body">
+
+        <div th:class="| container py-3 |">
+            <h1 th:class="| text-center |" th:text="| ToDo List |"></h1>
+        </div>
+        
+        <div class="container">
+            <div class="row">
+                <button class="btn btn-danger col-2 offset-10 my-3">Cerrar sesion</button>
+            </div>
+        </div>
+
+        <div th:class="| border container |">
+
+            <table th:class="| table table-bordered table-hover my-3 |">
+                <tbody>
+                    <tr th:id="|tr_${todo.IdToDo}|" th:each="todo : ${Todos}">
+                        <td th:class="| d-flex justify-content-between d-flex align-items-center |">
+
+                            <div class="form-check form-switch">
+                                <span th:if="${todo.Status} == 0">
+                                    <input class="form-check-input me-3" type="checkbox" role="switch" id="flexSwitchCheckDefault" th:onchange="ChangeStatus(this,[[${todo.IdToDo}]])">
+                                    <label class="fs-5" th:id="|lbl-${todo.IdToDo}|" th:text="${todo.Nombre}" th:for="${todo.IdToDo}"></label>
+                                </span>
+                                <span th:if="${todo.Status} == 1">
+                                    <input class="form-check-input me-3" type="checkbox" role="switch" id="flexSwitchCheckDefault" checked th:onchange="ChangeStatus(this,[[${todo.IdToDo}]])">
+                                    <label class="fs-5 fst-italic text-decoration-line-through" th:id="|lbl-${todo.IdToDo}|" th:text="${todo.Nombre}" th:for="${todo.IdToDo}"></label>
+                                </span>
+                            </div>
+
+                            <div class="d-flex">
+
+                                <button type="button" class="btn btn-primary m-1" data-bs-toggle="modal" th:attr="data-bs-target='#UpdateToDo-'+${todo.IdToDo}">
+                                    <i class="bi bi-pencil-square"></i>
+                                </button>
+                                <div class="modal fade" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" th:id="|UpdateToDo-${todo.IdToDo}|">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content">
+                                            <div class="modal-body">
+
+                                                <textarea th:placeholder="${todo.Nombre}" th:text="${todo.Nombre}" class="form-control" th:id="|txt-update-${todo.IdToDo}|"></textarea>
+
+                                                <div class="d-flex justify-content-end mt-3" >
+                                                    <button type="button" class="btn btn-secondary me-1" data-bs-dismiss="modal">Cancelar</button>
+                                                    <button type="button" class="btn btn-primary ms-1" data-bs-dismiss="modal" th:data-update-id="${todo.IdToDo}">Guardar</button>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button type="button" class="btn btn-danger m-1" data-bs-toggle="modal" th:attr="data-bs-target='#DeleteToDo-'+${todo.IdToDo}">
+                                    <i class="bi bi-trash3-fill"></i>
+                                </button>
+                                <div class="modal fade" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" th:id="|DeleteToDo-${todo.IdToDo}|">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+
+                                            <div class="modal-header">
+                                                <div class="fs-5">¿Deseas eliminar el registro?</div>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+
+                                            <div class="modal-body">
+                                                <span th:text="${todo.Nombre}" class="fs-5"></span>
+                                            </div>
+
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-primary me-1" data-bs-dismiss="modal">NO</button>
+                                                <button type="button" class="btn btn-secondary ms-1" data-bs-dismiss="modal" th:data-delete-id="${todo.IdToDo}">SI</button>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="d-grid col-3 mx-auto my-3">
+
+                <form class="mx-auto" th:object="${NewTodo}" th:action="@{/todo/add}" method="post" enctype="multipart/form-data">
+                    <button type="button" class="btn btn-warning rounded rounded-pill" data-bs-toggle="modal" data-bs-target="#NewToDo">
+                        New ToDo
+                    </button>
+
+                    <div class="modal fade" id="NewToDo" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-body">
+                                    <textarea class="form-control" th:field="*{Nombre}"></textarea>
+
+                                    <div class="d-flex justify-content-end mt-3" >
+                                        <button type="button" class="btn btn-secondary me-1" data-bs-dismiss="modal">Cancelar</button>
+                                        <button type="submit" class="btn btn-primary ms-1">Guardar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+            </div>
+
+        </div>
+    </body>
+</html>
+
+<script>
+
+    const ChangeStatus = function (i, idTodo) {
+
+        const newStatus = (i.checked) ? 1 : 0;
+
+        $.ajax({
+            url: '/todo/newStatus',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                idToDo: idTodo,
+                status: newStatus,
+            }),
+        });
+
+        const classes = (i.checked) ? 'fs-5 fst-italic text-decoration-line-through' : 'fs-5';
+
+        $(`#lbl-${idTodo}`)
+                .removeClass('fst-italic text-decoration-line-through')
+                .addClass(classes);
+        
+    }
+
+    $(document).ready(function () {
+
+        $('[data-update-id]').on('click', function () {
+            let idTodo = $(this).attr('data-update-id');
+            let nombre = $(`#txt-update-${idTodo}`).val();
+
+            $.ajax({
+                url: '/todo/update',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    idToDo: idTodo,
+                    nombre: nombre
+                }),
+            });
+
+            $(`#lbl-${idTodo}`).text(nombre);
+        });
+
+        $('[data-delete-id]').on('click', function () {
+            let idTodo = $(this).attr('data-delete-id');
+
+            $.ajax({
+                url: '/todo/delete',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    idToDo: idTodo,
+                }),
+            });
+
+            $(`#tr_${idTodo}`).remove();
+        });
+    });
+
+</script>
